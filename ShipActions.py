@@ -32,6 +32,11 @@ def harvest(game_state, ship):
         candidates = manhattanRadius(2, ship.position)
         next_spot, next_hal = chooseBestCell(candidates, game_state.game_map, ship.position)
         move = game_state.game_map.naive_navigate(ship, next_spot)
+        if ship.move(move) == ship.stay_still() and ship.position == game_state.me.shipyard.position:
+            for position in ship.position.get_surrounding_cardinals():
+                move = game_state.game_map.naive_navigate(ship, position)
+                if ship.move(move) != ship.stay_still():
+                    break
         return(ship.move(move))
     else:
         return(ship.stay_still())

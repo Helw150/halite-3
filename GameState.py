@@ -6,7 +6,8 @@ import logging
 from ShipActions import harvest
 
 class GameState():
-    def __init__(self):
+    def __init__(self, end_repro=100):
+        self.end_repro = end_repro
         self.game = hlt.Game()
         self.game.ready("Helw150")
         self.updateStates()
@@ -34,6 +35,6 @@ class GameState():
             
     def spawn(self):
         spawns = []
-        if self.game.turn_number <= 50 and self.me.halite_amount >= constants.SHIP_COST and not self.game_map[self.me.shipyard].is_occupied:
+        if self.game.turn_number <= self.end_repro and self.me.halite_amount >= constants.SHIP_COST and not self.game_map[self.me.shipyard].is_occupied:
             spawns.append(self.me.shipyard.spawn())
         return spawns
