@@ -7,22 +7,41 @@ from ShipActions import harvest, assasinate
 
 widthToTurns = {32:400, 40:425, 48:450, 56:475, 64:500}
 class GameState():
-    def __init__(self, end_repro=300, assasins=True):
+    def __init__(self, end_repro=300, use_assasins=False):
         self.end_repro = end_repro
         self.game = hlt.Game()
         self.me = self.game.me
+        self.use_assasins = use_assasins
         self.width = self.game.game_map.width
         self.turns = widthToTurns[self.width]
         self.assasins = {}
         self.opponent_bases = [player.shipyard.position for player in self.game.players.values() if player != self.me]
         self.updateStates()
+        self._start = "e"
         self.game.ready("Helw150")
         logging.info("Beginning Game! My Player ID is {}.".format(self.game.my_id))
 
+    def start(self):
+        west_yard = self.me.shipyard.position.directional_offset(Direction.West)
+        east_yard = self.me.shipyard.position.directional_offset(Direction.East)
+        if type(self.game_map[east_yard].what_occupies()) == str:
+            return "e"
+        elif type(self.game_map[west_yard].what_occupies()) == str:
+            return "w"
+        else:
+            return "o"
+        
+    def controlBaseEntry(self):
+        for neighbor in self.me.shipyard.position.get_surrounding_cardinals():
+            if not self.game_map[neighbor].is_occupied:
+                self.game_map[neighbor].mark_unsafe("Thing")
+        
     def updateStates(self):
         self.me = self.game.me
         self.game_map = self.game.game_map
-        self.createAssasins()
+        self.controlBaseEntry()
+        if self.use_assasins:
+            self.createAssasins()
         
     def createAssasins(self):
         logging.info(len(self.me.get_ships()))

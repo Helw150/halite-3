@@ -36,6 +36,9 @@ class MapCell:
         """
         return self.structure is not None
 
+    def what_occupies(self):
+        return self.ship
+    
     @property
     def structure_type(self):
         """
@@ -156,7 +159,9 @@ class GameMap:
         """
         # No need to normalize destination, since get_unsafe_moves
         # does that
-        for direction in self.get_unsafe_moves(ship.position, destination):
+        moves = self.get_unsafe_moves(ship.position, destination)
+        moves.sort(key=lambda x: self[ship.position.directional_offset(x)].halite_amount)
+        for direction in moves:
             target_pos = ship.position.directional_offset(direction)
             if not self[target_pos].is_occupied:
                 self[target_pos].mark_unsafe(ship)
