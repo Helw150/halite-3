@@ -27,9 +27,12 @@ while True:
     
     command_queue = []
     for ship in me.get_ships():
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full:
+        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10:
             next_spot = random.choice(ship.position.get_surrounding_cardinals())
             move = game_map.naive_navigate(ship, next_spot)
+            command_queue.append(ship.move(move))
+        elif ship.halite_amount >= constants.MAX_HALITE / 4:
+            move = game_map.naive_navigate(ship, me.shipyard.position)
             command_queue.append(ship.move(move))
         else:
             command_queue.append(ship.stay_still())
