@@ -44,4 +44,9 @@ def harvest(game_state, ship):
 
 def returnToHome(game_state, ship):
     move = game_state.game_map.naive_navigate(ship, game_state.me.shipyard.position)
+    if ship.move(move) == ship.stay_still():
+            for position in ship.position.get_surrounding_cardinals():
+                move = game_state.game_map.naive_navigate(ship, position)
+                if ship.move(move) != ship.stay_still():
+                    break
     return(ship.move(move))
