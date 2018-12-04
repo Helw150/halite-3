@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Python 3.6
-import .GameState
+from GameState import GameState
 
 game = GameState()
 while True:
