@@ -26,11 +26,6 @@ class GameState():
         
     def createAssasins(self):
         logging.info(len(self.me.get_ships()))
-        for ship in list(self.assasins.keys()):
-            if ship not in [ship.id for ship in self.me.get_ships()]:
-                target = self.assasins[ship]
-                del(self.assasins[ship])
-                self.opponent_bases.append(target)
         if self.opponent_bases != [] and len(self.me.get_ships()) - len(self.assasins) > 5:
             for ship in sorted(self.me.get_ships(), key=lambda x: x.halite_amount):
                 if ship.halite_amount == 0 and ship not in self.assasins:
