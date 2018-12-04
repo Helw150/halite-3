@@ -19,7 +19,6 @@ def chooseBestCell(positions, game_map, current_pos):
     for position in positions:
         if game_map[position].halite_amount > max_hal and position != current_pos:
             max_cell = position
-            logging.info((position, current_pos))
             max_hal = game_map[max_cell].halite_amount
     return max_cell, max_hal
     
@@ -42,6 +41,22 @@ def harvest(game_state, ship):
         return(ship.stay_still())
 
 
+def assasinate(game_state, ship, target):
+    current_position_halite = game_state.game_map[ship.position].halite_amount
+    current_cost = 0.1 * current_position_halite
+    logging.info("Assasin Ship {}".format(ship))
+    logging.info("Assasin Target {}".format(target))
+    move = game_state.game_map.naive_navigate(ship, target)
+    if ship.move(move) == ship.stay_still() and ship.position != target:
+            for position in ship.position.get_surrounding_cardinals():
+                move = game_state.game_map.naive_navigate(ship, position)
+                if ship.move(move) != ship.stay_still():
+                    break
+    if ship.halite_amount >= current_cost:
+        return(ship.move(move))
+    else:
+        return(ship.stay_still())
+    
 def returnToHome(game_state, ship):
     move = game_state.game_map.naive_navigate(ship, game_state.me.shipyard.position)
     if ship.move(move) == ship.stay_still():
