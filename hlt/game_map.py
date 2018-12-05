@@ -1,11 +1,11 @@
 import queue
 
+import logging
 from . import constants
 from .entity import Entity, Shipyard, Ship, Dropoff
 from .player import Player
 from .positionals import Direction, Position
 from .common import read_input
-
 
 class MapCell:
     """A cell on the game map."""
@@ -146,6 +146,15 @@ class GameMap:
                                   else Direction.invert(y_cardinality))
         return possible_moves
 
+    def smarter_navigate(self, ship, destination, futures):
+        logging.info("memes {}".format(futures))
+        moves = self.get_unsafe_moves(ship.position, destination)
+        moves.sort(key=lambda x: self[ship.position.directional_offset(x)].halite_amount)
+        for move in moves:
+            if ship.position.directional_offset(move) not in futures:
+                return move
+        return Direction.Still
+
     def naive_navigate(self, ship, destination):
         """
         Returns a singular safe move towards the destination.
@@ -156,9 +165,7 @@ class GameMap:
         """
         # No need to normalize destination, since get_unsafe_moves
         # does that
-        moves = self.get_unsafe_moves(ship.position, destination)
-        moves.sort(key=lambda x: self[ship.position.directional_offset(x)].halite_amount)
-        for direction in moves:
+        for direction in self.get_unsafe_moves(ship.position, destination):
             target_pos = ship.position.directional_offset(direction)
             if not self[target_pos].is_occupied:
                 self[target_pos].mark_unsafe(ship)

@@ -4,6 +4,19 @@ from hlt import constants
 import random
 import logging
 
+def harvest(game_state, ship):
+    if ship.halite_amount >= 0.9*constants.MAX_HALITE:
+        return(returnToHome(game_state, ship))
+    else:
+        candidates = manhattanRadius(2, ship.position)
+        next_spot, next_hal = chooseBestCell(candidates, game_state.game_map, ship.position)
+        move = game_state.game_map.smarter_navigate(ship, next_spot, game_state.futures)
+        return(move)
+        
+def returnToHome(game_state, ship):
+    move = game_state.game_map.smarter_navigate(ship, game_state.me.shipyard.position, game_state.futures)
+    return(move)
+
 def manhattanRadius(N, position):
     if N == 1:
         return position.get_surrounding_cardinals()
@@ -12,7 +25,7 @@ def manhattanRadius(N, position):
         for next_position in position.get_surrounding_cardinals():
             candidates.extend(manhattanRadius(N-1, next_position))
         return candidates
-
+    
 def chooseBestCell(positions, game_map, current_pos):
     max_cell = current_pos
     max_hal = game_map[max_cell].halite_amount*3
@@ -21,54 +34,3 @@ def chooseBestCell(positions, game_map, current_pos):
             max_cell = position
             max_hal = game_map[max_cell].halite_amount
     return max_cell, max_hal
-    
-def harvest(game_state, ship):
-    current_position_halite = game_state.game_map[ship.position].halite_amount
-    current_cost = 0.1 * current_position_halite
-    if current_position_halite == 0:
-        logging.info((current_cost, ship.halite_amount))
-    if ship.halite_amount >= 0.9*constants.MAX_HALITE:
-        return(returnToHome(game_state, ship))
-    elif ship.position == game_state.me.shipyard.position:
-        return(collisionAvoidance(ship, game_state))
-    elif ship.halite_amount >= current_cost or int(current_position_halite) == 0:
-        candidates = manhattanRadius(2, ship.position)
-        next_spot, next_hal = chooseBestCell(candidates, game_state.game_map, ship.position)
-        move = game_state.game_map.naive_navigate(ship, next_spot)
-        if ship.move(move) == ship.stay_still() and ship.position == game_state.me.shipyard.position:
-            return(collisionAvoidance(ship, game_state))
-        return(ship.move(move))
-    else:
-        return(ship.stay_still())
-
-
-def assasinate(game_state, ship, target):
-    current_position_halite = game_state.game_map[ship.position].halite_amount
-    current_cost = 0.1 * current_position_halite
-    logging.info("Assasin Ship {}".format(ship))
-    logging.info("Assasin Target {}".format(target))
-    move = game_state.game_map.naive_navigate(ship, target)
-    if ship.move(move) == ship.stay_still() and ship.position != target:
-            for position in ship.position.get_surrounding_cardinals():
-                move = game_state.game_map.naive_navigate(ship, position)
-                if ship.move(move) != ship.stay_still():
-                    break
-    if ship.halite_amount >= current_cost:
-        return(ship.move(move))
-    else:
-        return(ship.stay_still())
-    
-def returnToHome(game_state, ship):
-    move = game_state.game_map.naive_navigate(ship, game_state.me.shipyard.position)
-    if ship.move(move) == ship.stay_still():
-        return(collisionAvoidance(ship, game_state))
-    return(ship.move(move))
-
-def collisionAvoidance(ship, game_state):
-    locations = ship.position.get_surrounding_cardinals()
-    random.shuffle(locations)
-    for location in locations:
-        move = game_state.game_map.naive_navigate(ship, location)
-        if ship.move(move) != ship.stay_still():
-            break
-    return(ship.move(move))
