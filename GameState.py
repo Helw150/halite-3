@@ -7,12 +7,13 @@ from ShipActions import harvest, assasinate
 
 widthToTurns = {32:400, 40:425, 48:450, 56:475, 64:500}
 class GameState():
-    def __init__(self, end_repro=300, assasins=True):
+    def __init__(self, end_repro=300, assasins=False):
         self.end_repro = end_repro
         self.game = hlt.Game()
         self.me = self.game.me
         self.width = self.game.game_map.width
         self.turns = widthToTurns[self.width]
+        self.use_assasins = assasins
         self.assasins = {}
         self.opponent_bases = [player.shipyard.position for player in self.game.players.values() if player != self.me]
         self.updateStates()
@@ -22,7 +23,8 @@ class GameState():
     def updateStates(self):
         self.me = self.game.me
         self.game_map = self.game.game_map
-        self.createAssasins()
+        if self.use_assasins:
+            self.createAssasins()
         
     def createAssasins(self):
         logging.info(len(self.me.get_ships()))

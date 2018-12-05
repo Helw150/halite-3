@@ -25,17 +25,18 @@ def chooseBestCell(positions, game_map, current_pos):
 def harvest(game_state, ship):
     current_position_halite = game_state.game_map[ship.position].halite_amount
     current_cost = 0.1 * current_position_halite
+    if current_position_halite == 0:
+        logging.info((current_cost, ship.halite_amount))
     if ship.halite_amount >= 0.9*constants.MAX_HALITE:
         return(returnToHome(game_state, ship))
-    elif ship.halite_amount >= current_cost:
+    elif ship.position == game_state.me.shipyard.position:
+        return(collisionAvoidance(ship, game_state))
+    elif ship.halite_amount >= current_cost or int(current_position_halite) == 0:
         candidates = manhattanRadius(2, ship.position)
         next_spot, next_hal = chooseBestCell(candidates, game_state.game_map, ship.position)
         move = game_state.game_map.naive_navigate(ship, next_spot)
         if ship.move(move) == ship.stay_still() and ship.position == game_state.me.shipyard.position:
-            for position in ship.position.get_surrounding_cardinals():
-                move = game_state.game_map.naive_navigate(ship, position)
-                if ship.move(move) != ship.stay_still():
-                    break
+            return(collisionAvoidance(ship, game_state))
         return(ship.move(move))
     else:
         return(ship.stay_still())
@@ -60,8 +61,14 @@ def assasinate(game_state, ship, target):
 def returnToHome(game_state, ship):
     move = game_state.game_map.naive_navigate(ship, game_state.me.shipyard.position)
     if ship.move(move) == ship.stay_still():
-            for position in ship.position.get_surrounding_cardinals():
-                move = game_state.game_map.naive_navigate(ship, position)
-                if ship.move(move) != ship.stay_still():
-                    break
+        return(collisionAvoidance(ship, game_state))
+    return(ship.move(move))
+
+def collisionAvoidance(ship, game_state):
+    locations = ship.position.get_surrounding_cardinals()
+    random.shuffle(locations)
+    for location in locations:
+        move = game_state.game_map.naive_navigate(ship, location)
+        if ship.move(move) != ship.stay_still():
+            break
     return(ship.move(move))
