@@ -147,7 +147,6 @@ class GameMap:
         return possible_moves
 
     def smarter_navigate(self, ship, destination, futures):
-        logging.info("memes {}".format(futures))
         moves = self.get_unsafe_moves(ship.position, destination)
         moves.sort(key=lambda x: self[ship.position.directional_offset(x)].halite_amount)
         for move in moves:

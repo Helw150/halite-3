@@ -50,23 +50,50 @@ class GameState():
     def addToFuture(self, ship, direction):
         logging.info(self.futures)
         future_pos = ship.position.directional_offset(direction)
-        self.futures.append(future_pos)
+        if future_pos in futures:
+            self.futures[future_pos].append((ship, direction))
+            self.futures[future_pos].sort(key=lambda x: x[0].position != future_pos)
+        else:
+            self.futures[future_pos] = [(ship, direction)]
         logging.info(self.futures)
         
     def moveShips(self):
-        moves = []
         still_ships, ships_to_move = self.shipsByMovingStatus()
         for ship in still_ships:
             self.futures.append(ship.position)
         for ship in ships_to_move:
             move = harvest(self, ship)
             self.addToFuture(ship, move)
+        while self.collisionDetected():
+            self.collisionResolve()
+        return self.enactFuture()
+
+    def collisionDetected(self):
+        for residing_ships in self.futures.values():
+            if len(residing_ships) > 1:
+                return True
+        return False
+
+    def collisionResolve(self):
+        ships_to_resolve = []
+        for position in self.futures:
+            residing_ships = self.futures[position]
+            if len(residing_ships) > 1:
+                self.futures[position] = residing_ships[0]
+                ships_to_resolve.extend(residing_ships[1:])
+        for ship in ships_to_resolve:
+            move = harvest(self, ship)
+            self.addToFuture(ship, move)
+
+    def enactFuture(self):
+        moves = []
+        for position in self.futures:
+            ship, move = self.futures[position][0]
             moves.append(ship.move(move))
         return moves
-
+            
     def spawn(self):
         spawns = []
         if self.game.turn_number <= self.turns-self.end_repro and self.me.halite_amount >= constants.SHIP_COST and self.me.shipyard.position not in self.futures:
-            self.futures.append(self.me.shipyard.position)
             spawns.append(self.me.shipyard.spawn())
         return spawns
