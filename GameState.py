@@ -1,5 +1,6 @@
 import hlt
 from hlt import constants
+from hlt.positionals import Direction
 from ShipActions import harvest
 
 import logging
@@ -20,7 +21,7 @@ class GameState():
         
     def shipsByMovingStatus(self):
         ships = self.me.get_ships()
-        still_ships = [ship for ship in ships if ship.halite_amount < self.game_map[ship.position].halite_amount*0.1]
+        still_ships = [ship for ship in ships if ship.halite_amount < self.game_map[ship.position].halite_amount*0.1 and self.game_map[ship.position].halite_amount != 0]
         ships_to_move = [ship for ship in ships if ship not in still_ships]
         return still_ships, ships_to_move
         
@@ -35,7 +36,7 @@ class GameState():
     def updateStates(self):
         self.me = self.game.me
         self.game_map = self.game.game_map
-        self.futures = []
+        self.futures = {}
             
     def loop(self):
         commands = []
@@ -50,7 +51,7 @@ class GameState():
     def addToFuture(self, ship, direction):
         logging.info(self.futures)
         future_pos = ship.position.directional_offset(direction)
-        if future_pos in futures:
+        if future_pos in self.futures:
             self.futures[future_pos].append((ship, direction))
             self.futures[future_pos].sort(key=lambda x: x[0].position != future_pos)
         else:
@@ -60,7 +61,7 @@ class GameState():
     def moveShips(self):
         still_ships, ships_to_move = self.shipsByMovingStatus()
         for ship in still_ships:
-            self.futures.append(ship.position)
+            self.addToFuture(ship, Direction.Still)
         for ship in ships_to_move:
             move = harvest(self, ship)
             self.addToFuture(ship, move)
@@ -79,9 +80,9 @@ class GameState():
         for position in self.futures:
             residing_ships = self.futures[position]
             if len(residing_ships) > 1:
-                self.futures[position] = residing_ships[0]
+                self.futures[position] = [residing_ships[0]]
                 ships_to_resolve.extend(residing_ships[1:])
-        for ship in ships_to_resolve:
+        for ship, _ in ships_to_resolve:
             move = harvest(self, ship)
             self.addToFuture(ship, move)
 

@@ -7,6 +7,10 @@ import logging
 def harvest(game_state, ship):
     if ship.halite_amount >= 0.9*constants.MAX_HALITE:
         return(returnToHome(game_state, ship))
+    elif ship.position == game_state.me.shipyard.position:
+        next_spot = random.choice(ship.position.get_surrounding_cardinals())
+        move = game_state.game_map.smarter_navigate(ship, next_spot, game_state.futures)
+        return(move)
     else:
         candidates = manhattanRadius(2, ship.position)
         next_spot, next_hal = chooseBestCell(candidates, game_state.game_map, ship.position)
