@@ -5,7 +5,7 @@ import random
 import logging
 
 def harvest(game_state, ship):
-    if ship.halite_amount >= 0.9*constants.MAX_HALITE:
+    if ship.halite_amount >= 0.9*constants.MAX_HALITE or int(game_state.game_map.calculate_distance(ship.position, game_state.me.shipyard.position)*1.5) > game_state.turns_left or game_state.turns_left <= 25:
         return(returnToHome(game_state, ship))
     elif ship.position == game_state.me.shipyard.position:
         next_spot = random.choice(ship.position.get_surrounding_cardinals())

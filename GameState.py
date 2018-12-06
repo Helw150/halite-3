@@ -63,8 +63,9 @@ class GameState():
         for ship in still_ships:
             self.addToFuture(ship, Direction.Still)
         for ship in ships_to_move:
-            move = harvest(self, ship)
-            self.addToFuture(ship, move)
+            if ship.position != self.me.shipyard.position or self.turns_left > 25:
+                move = harvest(self, ship)
+                self.addToFuture(ship, move)
         while self.collisionDetected():
             self.collisionResolve()
         return self.enactFuture()
@@ -92,9 +93,13 @@ class GameState():
             ship, move = self.futures[position][0]
             moves.append(ship.move(move))
         return moves
-            
+
+    @property
+    def turns_left(self):
+        return self.turns-self.game.turn_number
+    
     def spawn(self):
         spawns = []
-        if self.game.turn_number <= self.turns-self.end_repro and self.me.halite_amount >= constants.SHIP_COST and self.me.shipyard.position not in self.futures:
+        if self.turns_left >= self.end_repro and self.me.halite_amount >= constants.SHIP_COST and self.me.shipyard.position not in self.futures:
             spawns.append(self.me.shipyard.spawn())
         return spawns
