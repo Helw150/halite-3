@@ -15,14 +15,16 @@ class GameState():
         logging.info("Beginning Game! My Player ID is {}.".format(self.game.my_id))
 
     def spawningParams(self):
-        self.end_repro = 300
+        self.end_repro = 200
         self.width = self.game.game_map.width
         self.turns = widthToTurns[self.width]
+        self.max_ships = self.turns*.075
         
     def shipsByMovingStatus(self):
         ships = self.me.get_ships()
         still_ships = [ship for ship in ships if ship.halite_amount < self.game_map[ship.position].halite_amount*0.1 and self.game_map[ship.position].halite_amount != 0]
         ships_to_move = [ship for ship in ships if ship not in still_ships]
+        ships_to_move.sort(key = lambda x: self.game_map.calculate_distance(x.position, self.me.shipyard.position))
         return still_ships, ships_to_move
         
     def get_halite_grid(self):
@@ -100,6 +102,6 @@ class GameState():
     
     def spawn(self):
         spawns = []
-        if self.turns_left >= self.end_repro and self.me.halite_amount >= constants.SHIP_COST and self.me.shipyard.position not in self.futures:
+        if self.turns_left >= self.end_repro and self.me.halite_amount >= constants.SHIP_COST and self.me.shipyard.position not in self.futures and len(self.me.get_ships()) < self.max_ships:
             spawns.append(self.me.shipyard.spawn())
         return spawns

@@ -1,5 +1,6 @@
 import hlt
 from hlt import constants
+from hlt.positionals import Direction
 
 import random
 import logging
@@ -34,7 +35,7 @@ def chooseBestCell(positions, game_map, current_pos):
     max_cell = current_pos
     max_hal = game_map[max_cell].halite_amount*3
     for position in positions:
-        if game_map[position].halite_amount > max_hal and position != current_pos:
+        if (game_map[position].halite_amount > max_hal and position != current_pos) or max_hal == 0:
             max_cell = position
             max_hal = game_map[max_cell].halite_amount
     return max_cell, max_hal
