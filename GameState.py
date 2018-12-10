@@ -1,7 +1,8 @@
 import hlt
 from hlt import constants
-from hlt.positionals import Direction
+from hlt.positionals import Direction, Position
 from ShipActions import harvest
+import numpy as np
 
 import logging
 widthToTurns = {32:400, 40:425, 48:450, 56:475, 64:500}
@@ -9,11 +10,37 @@ widthToTurns = {32:400, 40:425, 48:450, 56:475, 64:500}
 class GameState():
     def __init__(self):
         self.game = hlt.Game()
-        self.updateStates()
         self.spawningParams()
+        self.halite_matrix = np.zeros((self.width, self.width), dtype=float)
+        self.updateStates()
+        self.createPositionWeights()
         self.game.ready("Helw150")
         logging.info("Beginning Game! My Player ID is {}.".format(self.game.my_id))
 
+    def createPositionWeights(self):
+        origin = Position(0,0)
+        origin_distance_matrix = np.zeros((self.width, self.width), dtype=float)
+        for x in range(self.width):
+            for y in range(self.width):
+                next_position = Position(x, y)
+                origin_distance_matrix[x][y] = float(self.game_map.calculate_distance(origin, next_position))
+        origin_weight_matrix = (0.2)**origin_distance_matrix
+        self.position_weights = {origin: origin_weight_matrix}
+        for x in range(self.width):
+            for y in range(self.width):
+                position = Position(x, y)
+                weight_matrix_horizontal_shifted = np.roll(origin_weight_matrix, x, axis=0)
+                weight_matrix_shifted = np.roll(weight_matrix_horizontal_shifted, y, axis=1)
+                self.position_weights[position] = weight_matrix_shifted
+                
+
+    def updateHaliteMatrix(self):
+        for x in range(self.width):
+            for y in range(self.width):
+                position = Position(x, y)
+                self.halite_matrix[x][y] = self.game_map[position].halite_amount
+        logging.info(self.halite_matrix)
+        
     def spawningParams(self):
         self.end_repro = 200
         self.width = self.game.game_map.width
@@ -38,6 +65,7 @@ class GameState():
     def updateStates(self):
         self.me = self.game.me
         self.game_map = self.game.game_map
+        self.updateHaliteMatrix()
         self.futures = {}
             
     def loop(self):
