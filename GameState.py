@@ -27,7 +27,7 @@ class GameState():
                 if distance == 0:
                     offset = 0
                 origin_distance_matrix[x][y] = float(self.game_map.calculate_distance(origin, next_position)) + offset
-        origin_weight_matrix = (0.395)**origin_distance_matrix
+        origin_weight_matrix = (0.4)**origin_distance_matrix
         self.position_weights = {origin: origin_weight_matrix}
         for x in range(self.width):
             for y in range(self.width):

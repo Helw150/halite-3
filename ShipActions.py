@@ -16,6 +16,10 @@ def returnCondition(game_state, ship):
 def harvest(game_state, ship):
     if returnCondition(game_state, ship):
         return(returnToHome(game_state, ship))
+    elif ship.position == game_state.me.shipyard.position:
+        next_spot = random.choice(ship.position.get_surrounding_cardinals())
+        move = game_state.game_map.smarter_navigate(ship, next_spot, game_state.futures)
+        return(move)
     else:
         candidates = manhattanRadius(1, ship.position)
         next_spot = chooseBestCell(candidates, game_state, ship.position)
