@@ -7,19 +7,15 @@ import random
 import logging
 
 def returnCondition(game_state, ship):
-    min_hal = ship.halite_amount >= 0.8*constants.MAX_HALITE
-    hal_ratio = game_state.game_map[current_pos].halite_amount
+    min_hal = ship.halite_amount >= 0.9*constants.MAX_HALITE
+    hal_ratio = game_state.game_map[ship.position].halite_amount <= 0.18 * ship.halite_amount
     return_for_end = int(game_state.game_map.calculate_distance(ship.position, game_state.me.shipyard.position)*1.5) > game_state.turns_left
     emergency_return = game_state.turns_left <= 25
-    return (min_hal and hal_ratio) or return_for_end or emergency_return
+    return (min_hal and hal_ratio) or return_for_end or emergency_return or ship.is_full
 
 def harvest(game_state, ship):
     if returnCondition(game_state, ship):
         return(returnToHome(game_state, ship))
-    elif ship.position == game_state.me.shipyard.position:
-        next_spot = random.choice(ship.position.get_surrounding_cardinals())
-        move = game_state.game_map.smarter_navigate(ship, next_spot, game_state.futures)
-        return(move)
     else:
         candidates = manhattanRadius(1, ship.position)
         next_spot = chooseBestCell(candidates, game_state, ship.position)

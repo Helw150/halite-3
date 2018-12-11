@@ -69,10 +69,10 @@ class GameMap:
     Can be indexed by a position, or by a contained entity.
     Coordinates start at 0. Coordinates are normalized for you
     """
-    def __init__(self, cells, width, height):
+    def __init__(self, cells, width, height, halite_matrix):
         self.width = width
         self.height = height
-        self.halite_matrix = np.zeros((self.width, self.height), dtype=float)
+        self.halite_matrix = halite_matrix
         self._cells = cells
 
     def __getitem__(self, location):
@@ -182,12 +182,14 @@ class GameMap:
         """
         map_width, map_height = map(int, read_input().split())
         game_map = [[None for _ in range(map_width)] for _ in range(map_height)]
+        halite_matrix = np.zeros((map_width, map_height), dtype=float)
         for y_position in range(map_height):
             cells = read_input().split()
             for x_position in range(map_width):
+                halite_matrix[x_position][y_position] = int(cells[x_position])
                 game_map[y_position][x_position] = MapCell(Position(x_position, y_position),
                                                            int(cells[x_position]))
-        return GameMap(game_map, map_width, map_height)
+        return GameMap(game_map, map_width, map_height, halite_matrix)
 
     def _update(self):
         """

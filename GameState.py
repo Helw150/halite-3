@@ -22,8 +22,12 @@ class GameState():
         for x in range(self.width):
             for y in range(self.width):
                 next_position = Position(x, y)
-                origin_distance_matrix[x][y] = float(self.game_map.calculate_distance(origin, next_position))
-        origin_weight_matrix = (0.2)**origin_distance_matrix
+                distance = float(self.game_map.calculate_distance(origin, next_position))
+                offset = 1
+                if distance == 0:
+                    offset = 0
+                origin_distance_matrix[x][y] = float(self.game_map.calculate_distance(origin, next_position)) + offset
+        origin_weight_matrix = (0.395)**origin_distance_matrix
         self.position_weights = {origin: origin_weight_matrix}
         for x in range(self.width):
             for y in range(self.width):
@@ -35,6 +39,7 @@ class GameState():
 
     def updateHaliteMatrix(self):
         self.halite_matrix = self.game_map.halite_matrix
+        logging.info(self.halite_matrix)
         
     def spawningParams(self):
         self.end_repro = 200
