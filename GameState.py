@@ -11,7 +11,6 @@ class GameState():
     def __init__(self):
         self.game = hlt.Game()
         self.spawningParams()
-        self.halite_matrix = np.zeros((self.width, self.width), dtype=float)
         self.updateStates()
         self.createPositionWeights()
         self.game.ready("Helw150")
@@ -35,11 +34,7 @@ class GameState():
                 
 
     def updateHaliteMatrix(self):
-        for x in range(self.width):
-            for y in range(self.width):
-                position = Position(x, y)
-                self.halite_matrix[x][y] = self.game_map[position].halite_amount
-        logging.info(self.halite_matrix)
+        self.halite_matrix = self.game_map.halite_matrix
         
     def spawningParams(self):
         self.end_repro = 200

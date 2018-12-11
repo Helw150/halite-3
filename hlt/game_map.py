@@ -1,6 +1,7 @@
 import queue
 
 import logging
+import numpy as np
 from . import constants
 from .entity import Entity, Shipyard, Ship, Dropoff
 from .player import Player
@@ -71,6 +72,7 @@ class GameMap:
     def __init__(self, cells, width, height):
         self.width = width
         self.height = height
+        self.halite_matrix = np.zeros((self.width, self.height), dtype=float)
         self._cells = cells
 
     def __getitem__(self, location):
@@ -200,4 +202,5 @@ class GameMap:
 
         for _ in range(int(read_input())):
             cell_x, cell_y, cell_energy = map(int, read_input().split())
+            self.halite_matrix[cell_x][cell_y] = cell_energy
             self[Position(cell_x, cell_y)].halite_amount = cell_energy
